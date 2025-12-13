@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install dependencies
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          uv sync --dev
+
+      - name: Run ruff check
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          uv run ruff check .
+
+      - name: Run ruff format check
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          uv run ruff format --check .
+
+      - name: Run pytest
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          uv run pytest

@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=mltrack
+      - POSTGRES_PASSWORD=mltrack
+      - POSTGRES_DB=mltrack
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mltrack
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mltrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mlflow:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://mltrack:mltrack@postgres:5432/mltrack
+
+volumes:
+  postgres_data:
