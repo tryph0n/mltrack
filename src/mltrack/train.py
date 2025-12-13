@@ -65,13 +65,16 @@ def main():
         print(f"MLflow tracking URI: {mlflow.get_tracking_uri()}")
 
         # Enable autologging for sklearn
-        mlflow.sklearn.autolog()
+        mlflow.sklearn.autolog()  # pyright: ignore[reportPrivateImportUsage]
 
         # Load Iris dataset
         print("\nLoading Iris dataset...")
         iris = load_iris()
         X_train, X_test, y_train, y_test = train_test_split(
-            iris.data, iris.target, test_size=0.2, random_state=42
+            iris.data,
+            iris.target,
+            test_size=0.2,
+            random_state=42,  # pyright: ignore[reportAttributeAccessIssue]
         )
         print(f"Dataset split: {len(X_train)} train, {len(X_test)} test samples")
 

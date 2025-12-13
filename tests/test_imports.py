@@ -5,7 +5,6 @@ from unittest.mock import patch
 
 
 def test_config_module_imports():
-    """Test that mltrack.config module imports successfully."""
     from mltrack.config import MLtrackConfig, get_s3_path, setup_mlflow
 
     assert MLtrackConfig is not None
@@ -14,7 +13,6 @@ def test_config_module_imports():
 
 
 def test_train_module_imports():
-    """Test that mltrack.train module imports successfully."""
     from mltrack.train import main, train_model
 
     assert main is not None
@@ -22,7 +20,6 @@ def test_train_module_imports():
 
 
 def test_mltrack_config_instantiation():
-    """Test that MLtrackConfig can be instantiated with mock env vars."""
     from mltrack.config import MLtrackConfig
 
     # Test direct instantiation
@@ -30,17 +27,16 @@ def test_mltrack_config_instantiation():
         tracking_uri="http://localhost:5000",
         s3_bucket_mlflow="test-mlflow",
         s3_bucket_data="test-data",
-        aws_region="eu-west-1",
+        aws_region="eu-west-3",
     )
 
     assert config.tracking_uri == "http://localhost:5000"
     assert config.s3_bucket_mlflow == "test-mlflow"
     assert config.s3_bucket_data == "test-data"
-    assert config.aws_region == "eu-west-1"
+    assert config.aws_region == "eu-west-3"
 
 
 def test_mltrack_config_from_env():
-    """Test that MLtrackConfig.from_env() works with mock env vars."""
     from mltrack.config import MLtrackConfig
 
     mock_env = {
@@ -60,7 +56,6 @@ def test_mltrack_config_from_env():
 
 
 def test_get_s3_path():
-    """Test S3 path construction utility."""
     from mltrack.config import get_s3_path
 
     path = get_s3_path("my-bucket", "folder", "subfolder", "file.txt")

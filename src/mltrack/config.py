@@ -13,7 +13,7 @@ Usage for external compute (e.g., Google Colab):
     os.environ["MLFLOW_TRACKING_URI"] = "http://your-mlflow-server:5000"
     os.environ["AWS_ACCESS_KEY_ID"] = "your-key"
     os.environ["AWS_SECRET_ACCESS_KEY"] = "your-secret"
-    os.environ["AWS_REGION"] = "eu-west-1"
+    os.environ["AWS_REGION"] = "eu-west-3"
     os.environ["S3_BUCKET_MLFLOW"] = "mltrack-mlflow"
     os.environ["S3_BUCKET_DATA"] = "mltrack-data"
 
@@ -65,7 +65,7 @@ class MLtrackConfig:
         tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
         s3_bucket_mlflow = os.getenv("S3_BUCKET_MLFLOW")
         s3_bucket_data = os.getenv("S3_BUCKET_DATA")
-        aws_region = os.getenv("AWS_REGION", "eu-west-1")
+        aws_region = os.getenv("AWS_REGION", "eu-west-3")
 
         if not tracking_uri:
             raise ValueError("MLFLOW_TRACKING_URI environment variable is required")

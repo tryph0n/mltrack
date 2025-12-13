@@ -95,7 +95,7 @@ try:
         df[["run_name", "model_type", "accuracy", "f1_score", "training_time"]].sort_values(
             "accuracy", ascending=False
         ),
-        use_container_width=True,
+        width="stretch",
     )
 
     # Line chart: Metrics evolution
@@ -109,7 +109,7 @@ try:
         title="Accuracy Over Time",
         labels={"start_time": "Timestamp", "accuracy": "Accuracy", "run_name": "Model"},
     )
-    st.plotly_chart(fig_line, use_container_width=True)
+    st.plotly_chart(fig_line, width="stretch")
 
     # Bar chart: Model comparison
     st.header("📊 Model Performance Comparison")
@@ -125,7 +125,7 @@ try:
         xaxis_title="Model",
         yaxis_title="Score",
     )
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_bar, width="stretch")
 
     # Best model details
     st.header("🏆 Best Model Details")

@@ -85,15 +85,17 @@ uv run python src/mltrack/train.py
 Create two S3 buckets in your AWS account:
 
 ```bash
-aws s3 mb s3://mltrack-mlflow --region eu-west-1
-aws s3 mb s3://mltrack-data --region eu-west-1
+aws s3 mb s3://mltrack-mlflow --region eu-west-3
+aws s3 mb s3://mltrack-data --region eu-west-3
 ```
 
 **Bucket folder structure:**
 
-- `mltrack-mlflow/artifacts/` - MLflow model artifacts and experiment data
-- `mltrack-data/training/` - Training datasets
-- `mltrack-data/inference/` - Inference data and predictions
+- `mltrack-mlflow/artifacts/` - MLflow model artifacts and experiment data (populated automatically)
+- `mltrack-data/training/` - Training datasets (upload manually or via code)
+- `mltrack-data/inference/` - Inference data and predictions (upload manually or via code)
+
+**Note:** The demo training script (`src/mltrack/train.py`) uses sklearn's built-in Iris dataset, so `mltrack-data` will remain empty unless you upload your own datasets. The `mltrack-mlflow` bucket is automatically populated with model artifacts when you run training.
 
 ### 2. Create IAM User
 
@@ -159,10 +161,16 @@ Edit `.env`:
 ```bash
 AWS_ACCESS_KEY_ID=your_access_key_here
 AWS_SECRET_ACCESS_KEY=your_secret_key_here
-AWS_REGION=eu-west-1
+AWS_REGION=eu-west-3
 S3_BUCKET_MLFLOW=mltrack-mlflow
 S3_BUCKET_DATA=mltrack-data
+MLFLOW_TRACKING_URI=http://localhost:5000
+MLFLOW_SERVER_ALLOWED_HOSTS=*
 ```
+
+**Configuration notes:**
+- `MLFLOW_SERVER_ALLOWED_HOSTS=*` allows Streamlit to access MLflow from Docker (prevents "Invalid Host header" errors)
+- For production, restrict allowed hosts: `MLFLOW_SERVER_ALLOWED_HOSTS=yourdomain.com,localhost`
 
 **Security notes:**
 - Never commit `.env` to version control (already in `.gitignore`)
@@ -180,7 +188,7 @@ import os
 os.environ["MLFLOW_TRACKING_URI"] = "http://your-mlflow-server:5000"
 os.environ["AWS_ACCESS_KEY_ID"] = "your-key"
 os.environ["AWS_SECRET_ACCESS_KEY"] = "your-secret"
-os.environ["AWS_REGION"] = "eu-west-1"
+os.environ["AWS_REGION"] = "eu-west-3"
 os.environ["S3_BUCKET_MLFLOW"] = "mltrack-mlflow"
 os.environ["S3_BUCKET_DATA"] = "mltrack-data"
 
@@ -227,7 +235,7 @@ For production deployment:
 ### Running Tests
 
 ```bash
-uv sync --dev  # Install dev dependencies first
+uv sync --extra dev  # Install dev dependencies first
 uv run pytest
 ```
 
