@@ -1,3 +1,10 @@
+```txt
+! DISCLAIMER !
+
+This project is provided as a resource for Jedha students. Made with lots of coffee and love.
+This is an opinionated approach. I strongly advise against using it in production as test coverage is insufficient, CI/CD is virtually non-existent, and no load testing has been performed: use it at your own risk.
+```
+
 # MLtrack
 
 Local-first MLOps stack for model metrics comparison. Train models on any compute platform (local, Colab, AWS, Lambda AI), track experiments with MLflow, and compare results in a unified dashboard.
