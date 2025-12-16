@@ -6,12 +6,19 @@ a comparison of all tracked model runs with interactive visualizations.
 
 import os
 
-import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 
 import mlflow
-import streamlit as st
+
+from data import fetch_runs as _fetch_runs
+
+# Cache wrapper
+@st.cache_data(ttl=30)
+def fetch_runs():
+    """Fetch runs with caching."""
+    return _fetch_runs()
 
 # Page config
 st.set_page_config(page_title="MLtrack Dashboard", page_icon="📊", layout="wide")
@@ -31,48 +38,12 @@ with col2:
         st.rerun()
 
 
-@st.cache_data(ttl=30)
-def fetch_runs():
-    """Fetch all runs from all experiments."""
-    client = mlflow.tracking.MlflowClient()
-    experiments = client.search_experiments()
-
-    all_runs = []
-    for exp in experiments:
-        runs = client.search_runs(experiment_ids=[exp.experiment_id])
-        all_runs.extend(runs)
-
-    return all_runs
-
-
-def parse_runs_to_df(runs):
-    """Parse MLflow runs into a pandas DataFrame."""
-    data = []
-    for run in runs:
-        metrics = run.data.metrics
-        params = run.data.params
-        data.append(
-            {
-                "run_name": run.info.run_name or run.info.run_id[:8],
-                "model_type": params.get("model_type", "Unknown"),
-                "accuracy": metrics.get("training_score", metrics.get("accuracy", 0)),
-                "f1_score": metrics.get("training_f1_score", 0),
-                "training_time": metrics.get("training_time", 0),
-                "run_id": run.info.run_id,
-                "start_time": pd.to_datetime(run.info.start_time, unit="ms"),
-            }
-        )
-    return pd.DataFrame(data)
-
-
-# Fetch and parse runs
+# Fetch runs
 try:
-    runs = fetch_runs()
-    if not runs:
+    df = fetch_runs()
+    if df is None or df.empty:
         st.warning("No runs found. Train some models to see results!")
         st.stop()
-
-    df = parse_runs_to_df(runs)
 
     # Summary metrics
     st.header("📈 Summary")
@@ -95,7 +66,6 @@ try:
         df[["run_name", "model_type", "accuracy", "f1_score", "training_time"]].sort_values(
             "accuracy", ascending=False
         ),
-        width="stretch",
     )
 
     # Line chart: Metrics evolution
@@ -140,5 +110,6 @@ try:
         st.metric("F1 Score", f"{best_row['f1_score']:.4f}")
 
 except Exception as e:
-    st.error(f"Error connecting to MLflow: {e}")
+    st.error(f"Error connecting to MLflow {e.__dict__}: {e}")
     st.info("Make sure MLflow server is running and accessible.")
+    raise e

@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && \
     pip install --no-cache-dir -r streamlit.txt
 
 COPY streamlit/app.py .
+COPY streamlit/data.py .
 
 EXPOSE 8501
 

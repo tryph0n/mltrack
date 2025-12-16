@@ -4,37 +4,56 @@ Local-first MLOps stack for model metrics comparison. Train models on any comput
 
 ## Architecture
 
+### System Overview
+
 ```mermaid
 graph TB
-    subgraph "Docker Compose"
-        MLflow[MLflow Server<br/>:5000]
-        Streamlit[Streamlit Dashboard<br/>:8501]
-        Postgres[(PostgreSQL<br/>:5432)]
+    subgraph "Training Pipeline"
+        main[main.py] --> pipelines[pipelines.py]
+        pipelines --> loaders[loaders.py]
+        pipelines --> models[models.py]
+        pipelines --> storage[storage.py]
     end
 
-    subgraph "AWS"
-        S3_MLflow[(S3 Bucket<br/>mltrack-mlflow)]
-        S3_Data[(S3 Bucket<br/>mltrack-data)]
+    subgraph "Config & Utils"
+        config[config.py]
+        logger[logger.py]
     end
 
-    subgraph "External Compute - Future"
-        Colab[Google Colab]
-        AWS_Compute[AWS SageMaker]
-        Lambda[Lambda AI]
+    subgraph "MLflow Stack"
+        mlflow[MLflow Server<br/>:5000]
+        s3[S3 Storage<br/>mltrack-mlflow]
+        postgres[(PostgreSQL<br/>:5432)]
     end
 
-    Training[Training Script<br/>standalone Python]
+    subgraph "Dashboard"
+        streamlit[streamlit/app.py]
+        data[streamlit/data.py]
+    end
 
-    MLflow --> Postgres
-    MLflow --> S3_MLflow
-    Streamlit --> MLflow
-    Training --> MLflow
-    Training --> S3_Data
+    pipelines --> mlflow
+    mlflow --> postgres
+    mlflow --> s3
+    storage --> s3
+    data --> mlflow
+    streamlit --> data
 
-    Colab -.-> MLflow
-    AWS_Compute -.-> MLflow
-    Lambda -.-> MLflow
+    main -.-> config
+    main -.-> logger
+    pipelines -.-> logger
 ```
+
+### Module Structure
+
+| Module | Purpose |
+|--------|---------|
+| `loaders.py` | Data loading abstraction (DataLoader base class, IrisLoader) |
+| `models.py` | Model registry for sklearn classifiers (LogisticRegression, RandomForest, SVM) |
+| `pipelines.py` | Training pipeline orchestration with MLflow tracking |
+| `storage.py` | S3 storage handler for datasets and trained models |
+| `logger.py` | Logging configuration (local/production mode) |
+| `config.py` | MLflow and AWS configuration from environment |
+| `train.py` | Standalone training script (demo with Iris dataset) |
 
 ## Prerequisites
 
@@ -73,7 +92,7 @@ uv sync
 5. Run the demo training script:
 
 ```bash
-uv run python src/mltrack/train.py
+uv run python src/mltrack/main.py --help
 ```
 
 6. View results in the dashboard at http://localhost:8501
@@ -169,11 +188,10 @@ MLFLOW_SERVER_ALLOWED_HOSTS=*
 ```
 
 **Configuration notes:**
-- `MLFLOW_SERVER_ALLOWED_HOSTS=*` allows Streamlit to access MLflow from Docker (prevents "Invalid Host header" errors)
+- For local, `MLFLOW_SERVER_ALLOWED_HOSTS=*` allows Streamlit to access MLflow from Docker (prevents "Invalid Host header" errors)
 - For production, restrict allowed hosts: `MLFLOW_SERVER_ALLOWED_HOSTS=yourdomain.com,localhost`
 
 **Security notes:**
-- Never commit `.env` to version control (already in `.gitignore`)
 - Rotate credentials regularly
 - Use different IAM users for production and development
 
@@ -230,6 +248,57 @@ For production deployment:
 
 4. **Expose MLflow server** (use nginx reverse proxy, add HTTPS, etc.)
 
+## Usage Patterns
+
+### Quick Start (train.py)
+
+Standalone script with built-in Iris dataset:
+
+```bash
+uv run python src/mltrack/train.py
+```
+
+**Best for**: Quick experiments, demo, or offline training
+
+### Modular Pipeline (main.py)
+
+Use the refactored modules (loaders, models, pipelines):
+
+```bash
+# Train all available models
+uv run python -m mltrack.main
+
+# Train specific models
+uv run python -m mltrack.main --models logistic_regression svm_rbf
+
+# Custom experiment
+uv run python -m mltrack.main --experiment-name "Experiment v2" --test-size 0.3
+```
+
+**Best for**: Experimentation, composable workflows, extensibility
+
+### Programmatic Usage
+
+```python
+from mltrack.config import setup_mlflow
+from mltrack.pipelines import TrainingPipeline, run_pipeline
+
+# Setup MLflow
+setup_mlflow()
+
+# Configure pipeline
+pipeline = TrainingPipeline(
+    loader_name="iris",
+    model_names=["random_forest", "svm_rbf"],
+    test_size=0.2,
+)
+
+# Run pipeline
+results = run_pipeline(pipeline, experiment_name="My Experiment")
+```
+
+**Best for**: Integration into larger workflows, production systems
+
 ## Development
 
 ### Running Tests
@@ -251,14 +320,28 @@ uv run ruff format .
 
 ```
 mltrack/
-├── src/mltrack/       # Main Python package
-│   ├── config.py      # MLflow/S3 configuration
-│   └── train.py       # Training script
-├── streamlit/         # Dashboard
-│   └── app.py
-├── mlflow/            # MLflow server Docker config
-├── tests/             # Test suite
-└── requirements/      # Split requirements for different services
+├── src/mltrack/                    # Main Python package
+│   ├── __init__.py
+│   ├── config.py                   # MLflow/S3 configuration
+│   ├── logger.py                   # Logging utilities
+│   ├── loaders.py                  # Data loading abstraction
+│   ├── models.py                   # Model registry
+│   ├── pipelines.py                # Pipeline orchestration
+│   ├── storage.py                  # S3 storage handler
+│   ├── train.py                    # Standalone training script
+│   └── main.py                     # Entry point (if available)
+├── streamlit/                      # Dashboard service
+│   ├── app.py                      # Main dashboard
+│   ├── data.py                     # Data utilities
+│   └── Dockerfile
+├── mlflow/                         # MLflow server
+│   ├── Dockerfile
+│   └── entrypoint.sh
+├── tests/                          # Test suite
+├── docs/                           # Documentation
+│   └── architecture.md             # Detailed architecture diagrams
+├── pyproject.toml                  # Project configuration (uv)
+└── docker-compose.yml              # Local development stack
 ```
 
 ## Contributing

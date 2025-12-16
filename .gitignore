@@ -8,23 +8,31 @@ wheels/
 
 # Virtual environments
 .venv
+venv
 
 # Environment variables
 .env
+.env.local
 *.pem
 *.key
+mlruns/
+docker-compose.override.yml
 
 # Testing and linting
 .pytest_cache/
 .ruff_cache/
 .coverage
 htmlcov/
+*.log
 
 # IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# Streamlit secrets
+.streamlit/secrets.toml
 
 # OS
 .DS_Store
