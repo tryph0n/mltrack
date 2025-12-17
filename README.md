@@ -257,16 +257,6 @@ For production deployment:
 
 ## Usage Patterns
 
-### Quick Start (train.py)
-
-Standalone script with built-in Iris dataset:
-
-```bash
-uv run python src/mltrack/train.py
-```
-
-**Best for**: Quick experiments, demo, or offline training
-
 ### Modular Pipeline (main.py)
 
 Use the refactored modules (loaders, models, pipelines):
