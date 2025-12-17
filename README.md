@@ -313,34 +313,6 @@ uv run ruff check .
 uv run ruff format .
 ```
 
-### Project Structure
-
-```
-mltrack/
-├── src/mltrack/                    # Main Python package
-│   ├── __init__.py
-│   ├── config.py                   # MLflow/S3 configuration
-│   ├── logger.py                   # Logging utilities
-│   ├── loaders.py                  # Data loading abstraction
-│   ├── models.py                   # Model registry
-│   ├── pipelines.py                # Pipeline orchestration
-│   ├── storage.py                  # S3 storage handler
-│   ├── train.py                    # Standalone training script
-│   └── main.py                     # Entry point (if available)
-├── streamlit/                      # Dashboard service
-│   ├── app.py                      # Main dashboard
-│   ├── data.py                     # Data utilities
-│   └── Dockerfile
-├── mlflow/                         # MLflow server
-│   ├── Dockerfile
-│   └── entrypoint.sh
-├── tests/                          # Test suite
-├── docs/                           # Documentation
-│   └── architecture.md             # Detailed architecture diagrams
-├── pyproject.toml                  # Project configuration (uv)
-└── docker-compose.yml              # Local development stack
-```
-
 ## Contributing
 
 1. Fork the repository
